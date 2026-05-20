@@ -183,7 +183,7 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
             <form onSubmit={verifyMatch} className="space-y-3">
               <div>
                 <label htmlFor="keyword-solver-input" className="block text-left text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1.5">
-                  Type Keyword to Match
+                  Type Your Answer Here
                 </label>
                 
                 <div className="relative flex items-center">
