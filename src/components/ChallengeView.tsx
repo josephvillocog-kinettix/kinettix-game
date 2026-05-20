@@ -180,53 +180,59 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
           )}
         </div>
 
-        {/* SOLVER AT THE BOTTOM - Integrated custom input-glow with absolute validation layout */}
-        <div className="w-full mt-auto pt-6 border-t border-white/5">
-          <form onSubmit={verifyMatch} className="space-y-3">
-            <div>
-              <label htmlFor="keyword-solver-input" className="block text-left text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1.5">
-                Type Keyword to Match
-              </label>
-              
-              <div className="relative flex items-center">
-                <input
-                  id="keyword-solver-input"
-                  type="text"
-                  placeholder="Enter keyword..."
-                  value={userInput}
-                  onChange={handleInputChange}
-                  autoComplete="off"
-                  autoFocus
-                  className="w-full bg-[#111] border border-white/10 rounded-full py-4 px-6 pr-24 text-sm text-[#e0e0e0] outline-none transition-all input-glow placeholder:text-gray-700"
-                />
+        {/* SOLVER AT THE BOTTOM - Integrated custom input-glow with absolute validation layout, only visible if Enabled is true */}
+        {selectedRow.Enabled ? (
+          <div className="w-full mt-auto pt-6 border-t border-white/5">
+            <form onSubmit={verifyMatch} className="space-y-3">
+              <div>
+                <label htmlFor="keyword-solver-input" className="block text-left text-[10px] font-semibold text-gray-500 tracking-[0.2em] uppercase mb-1.5">
+                  Type Keyword to Match
+                </label>
                 
-                <button
-                  type="submit"
-                  title="Verify Clue"
-                  className="absolute right-2 top-2 bottom-2 bg-white text-black hover:bg-gray-200 px-5 rounded-full font-semibold text-[10px] uppercase tracking-widest transition-colors cursor-pointer"
-                  id="btn-verify-match"
-                >
-                  Verify
-                </button>
+                <div className="relative flex items-center">
+                  <input
+                    id="keyword-solver-input"
+                    type="text"
+                    placeholder="Enter keyword..."
+                    value={userInput}
+                    onChange={handleInputChange}
+                    autoComplete="off"
+                    autoFocus
+                    className="w-full bg-[#111] border border-white/10 rounded-full py-4 px-6 pr-24 text-sm text-[#e0e0e0] outline-none transition-all input-glow placeholder:text-gray-700"
+                  />
+                  
+                  <button
+                    type="submit"
+                    title="Verify Clue"
+                    className="absolute right-2 top-2 bottom-2 bg-white text-black hover:bg-gray-200 px-5 rounded-full font-semibold text-[10px] uppercase tracking-widest transition-colors cursor-pointer"
+                    id="btn-verify-match"
+                  >
+                    Verify
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {errorMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-rose-950/20 border border-rose-900/30 text-rose-300 text-xs px-4 py-2.5 rounded-xl text-left"
-              >
-                {errorMessage}
-              </motion.div>
-            )}
+              {errorMessage && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-rose-950/20 border border-rose-900/30 text-rose-300 text-xs px-4 py-2.5 rounded-xl text-left"
+                >
+                  {errorMessage}
+                </motion.div>
+              )}
 
-            <div className="flex justify-between items-center text-[10px] text-gray-600 font-mono pt-1">
-              <span>Status: Awaiting decryption</span>
-              <span>Case-Insensitive</span>
-            </div>
-          </form>
-        </div>
+              <div className="flex justify-between items-center text-[10px] text-gray-600 font-mono pt-1">
+                <span>Status: Awaiting decryption</span>
+                <span>Case-Insensitive</span>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="w-full mt-auto pt-6 border-t border-white/5 text-center text-[10px] text-gray-600 font-mono">
+            Decryption console disabled for locked codes.
+          </div>
+        )}
       </motion.div>
     );
   }

@@ -108,8 +108,8 @@ export function CodeView({ matchedRow, onReset }: CodeViewProps) {
         </motion.div>
 
         {/* TARGET SENTENCE - MANDATORY SPECIFIC TEXT REQUIRED */}
-        <p className="text-gray-400 mb-4 sm:mb-8 font-light text-xs sm:text-sm font-sans">
-          The code you are looking for is below:
+        <p className="text-gray-400 mb-4 sm:mb-8 font-light text-xs sm:text-sm font-sans px-4">
+          Your clue is the <span className="font-semibold text-orange-400 select-all">{matchedRow.Keyword}</span>. Please use this as your clue and make sure to take note of the code below.
         </p>
 
         {/* CODE - Massive text format encased inside the custom glass-card */}

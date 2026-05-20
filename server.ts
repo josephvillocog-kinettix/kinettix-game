@@ -13,6 +13,8 @@ async function startServer() {
   app.get("/api/sheet-data", async (req, res) => {
     try {
       console.log("Fetching Google Sheets Apps Script data...");
+      
+      // Plain updated Google Sheet web app URL (as requested and tested successfully)
       const sheetUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
       
       const response = await fetch(sheetUrl, {
@@ -41,48 +43,72 @@ async function startServer() {
         console.log("Google Sheets returned 'Required headers missing.' - Gracefully parsing fallback dataset...");
         data = [
           {
-            "Text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
-            "Keyword": "keyboard",
-            "Code": "AFK123456",
-            "Enabled": true
+            "text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
+            "keyword": "keyboard",
+            "code": "AFK123456",
+            "enabled": true
           },
           {
-            "Text": "The Shadow Society Initiates Next Phase",
-            "Keyword": "SOCIETY",
-            "Code": "SOC-771-ALPHA",
-            "Enabled": true
+            "text": "The Shadow Society Initiates Next Phase",
+            "keyword": "SOCIETY",
+            "code": "SOC-771-ALPHA",
+            "enabled": true
           },
           {
-            "Text": "Underneath the Golden Gate Lies Enigma Gateway",
-            "Keyword": "GATEWAY",
-            "Code": "SES-882-UNLOCK",
-            "Enabled": true
+            "text": "Underneath the Golden Gate Lies Enigma Gateway",
+            "keyword": "GATEWAY",
+            "code": "SES-882-UNLOCK",
+            "enabled": true
           },
           {
-            "Text": "Pandora's Locked Box is Set to Self-Destruct",
-            "Keyword": "PANDORA",
-            "Code": "PAN-319-ESCAPE",
-            "Enabled": true
+            "text": "Pandora's Locked Box is Set to Self-Destruct",
+            "keyword": "PANDORA",
+            "code": "PAN-319-ESCAPE",
+            "enabled": true
           }
         ];
       }
 
-      res.json(data);
+      // Explicitly normalize keys to: text, keyword, code, enabled in that exact sequence
+      let rawList: any[] = [];
+      if (Array.isArray(data)) {
+        rawList = data;
+      } else if (data && typeof data === "object") {
+        const matchingKey = Object.keys(data).find(k => Array.isArray(data[k]));
+        if (matchingKey) rawList = data[matchingKey];
+      }
+
+      const sequencedData = rawList.map((item: any) => {
+        const rawEnabled = item.enabled !== undefined ? item.enabled : (item.Enabled !== undefined ? item.Enabled : true);
+        const isEnabled = String(rawEnabled).toLowerCase().trim() === "true" || 
+                          String(rawEnabled).toLowerCase().trim() === "yes" || 
+                          String(rawEnabled).toLowerCase().trim() === "1" || 
+                          rawEnabled === true;
+        // Build object in the exact requested key sequence: text, keyword, code, enabled
+        return {
+          text: String(item.text || item.Text || "").trim(),
+          keyword: String(item.keyword || item.Keyword || "").trim(),
+          code: String(item.code || item.Code || "").trim(),
+          enabled: isEnabled
+        };
+      });
+
+      res.json(sequencedData);
     } catch (error: any) {
       console.error("Error proxying Google Sheets Apps Script data, returning resilient fallback:", error.message);
-      // Fallback to avoid complete system lockup in development/preview
+      // Fallback in the exact requested key sequence: text, keyword, code, enabled
       res.json([
         {
-          "Text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
-          "Keyword": "keyboard",
-          "Code": "AFK123456",
-          "Enabled": true
+          "text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
+          "keyword": "keyboard",
+          "code": "AFK123456",
+          "enabled": true
         },
         {
-          "Text": "The Shadow Society Initiates Next Phase",
-          "Keyword": "SOCIETY",
-          "Code": "SOC-771-ALPHA",
-          "Enabled": true
+          "text": "The Shadow Society Initiates Next Phase",
+          "keyword": "SOCIETY",
+          "code": "SOC-771-ALPHA",
+          "enabled": true
         }
       ]);
     }
