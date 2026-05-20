@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { SheetRow } from "./types";
-import { DEMO_ROWS } from "./mockData";
 import { ChallengeView } from "./components/ChallengeView";
 import { CodeView } from "./components/CodeView";
 import { LoadingLogo } from "./components/LoadingLogo";
@@ -59,19 +58,19 @@ export default function App() {
           const remaining = Math.max(0, minDelay - elapsed);
 
           setTimeout(() => {
-            setRows(activeRows.length > 0 ? activeRows : DEMO_ROWS);
+            setRows(activeRows);
             setLoading(false);
           }, remaining);
         }
       } catch (err) {
-        console.warn("Secure backend fetch failed, using pre-configured sandbox fallback database:", err);
+        console.warn("Secure backend fetch failed:", err);
         if (active) {
           const elapsed = Date.now() - startTime;
           const minDelay = 1500;
           const remaining = Math.max(0, minDelay - elapsed);
           
           setTimeout(() => {
-            setRows(DEMO_ROWS);
+            setRows([]);
             setLoading(false);
           }, remaining);
         }

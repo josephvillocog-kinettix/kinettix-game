@@ -37,36 +37,8 @@ async function startServer() {
 
       console.log("Parsed Google Sheets Apps Script data:", data);
 
-      // Auto-Recovery Strategy: If Google Apps Script indicates a header mismatch or contains an error,
-      // we intercept and map to the full challenge list so the node operates correctly.
-      if (data && typeof data === "object" && (data.error === "Required headers missing." || "error" in data)) {
-        console.log("Google Sheets returned 'Required headers missing.' - Gracefully parsing fallback dataset...");
-        data = [
-          {
-            "text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
-            "keyword": "keyboard",
-            "code": "AFK123456",
-            "enabled": true
-          },
-          {
-            "text": "The Shadow Society Initiates Next Phase",
-            "keyword": "SOCIETY",
-            "code": "SOC-771-ALPHA",
-            "enabled": true
-          },
-          {
-            "text": "Underneath the Golden Gate Lies Enigma Gateway",
-            "keyword": "GATEWAY",
-            "code": "SES-882-UNLOCK",
-            "enabled": true
-          },
-          {
-            "text": "Pandora's Locked Box is Set to Self-Destruct",
-            "keyword": "PANDORA",
-            "code": "PAN-319-ESCAPE",
-            "enabled": true
-          }
-        ];
+      if (data && typeof data === "object" && "error" in data) {
+        throw new Error(`Google Sheets returned an error: ${data.error || JSON.stringify(data)}`);
       }
 
       // Explicitly normalize keys to: text, keyword, code, enabled in that exact sequence
@@ -95,22 +67,8 @@ async function startServer() {
 
       res.json(sequencedData);
     } catch (error: any) {
-      console.error("Error proxying Google Sheets Apps Script data, returning resilient fallback:", error.message);
-      // Fallback in the exact requested key sequence: text, keyword, code, enabled
-      res.json([
-        {
-          "text": "I have keys but open no locks. I have space but no room. You can enter, but you can't go outside. What am I?",
-          "keyword": "keyboard",
-          "code": "AFK123456",
-          "enabled": true
-        },
-        {
-          "text": "The Shadow Society Initiates Next Phase",
-          "keyword": "SOCIETY",
-          "code": "SOC-771-ALPHA",
-          "enabled": true
-        }
-      ]);
+      console.error("Error proxying Google Sheets Apps Script data:", error.message);
+      res.status(500).json({ error: error.message });
     }
   });
 
