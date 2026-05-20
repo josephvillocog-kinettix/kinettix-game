@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { SheetRow } from "./types";
+import { DEMO_ROWS } from "./mockData";
+import { ChallengeView } from "./components/ChallengeView";
+import { CodeView } from "./components/CodeView";
+import { LoadingLogo } from "./components/LoadingLogo";
+import { KeyRound, Smartphone } from "lucide-react";
+
+export default function App() {
+  const [rows, setRows] = useState<SheetRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch the sheet data securely from our secure backend proxy route
+  useEffect(() => {
+    let active = true;
+    const startTime = Date.now();
+
+    async function loadData() {
+      try {
+        const response = await fetch("/api/sheet-data");
+        if (!response.ok) {
+          throw new Error(`Data fetch failed: Status ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Match structural records dynamically
+        let rawList: any[] = [];
+        if (Array.isArray(data)) {
+          rawList = data;
+        } else if (data && typeof data === "object") {
+          const matchingKey = Object.keys(data).find(k => Array.isArray(data[k]));
+          if (matchingKey) rawList = data[matchingKey];
+        }
+
+        const mappedRows: SheetRow[] = rawList.map((item: any) => {
+          const rawEnabled = item.Enabled !== undefined ? item.Enabled : true;
+          const isEnabled = String(rawEnabled).toLowerCase().trim() === "true" || 
+                            String(rawEnabled).toLowerCase().trim() === "yes" || 
+                            String(rawEnabled).toLowerCase().trim() === "1" || 
+                            rawEnabled === true;
+          return {
+            Text: String(item.Text || item.text || "").trim(),
+            Keyword: String(item.Keyword || item.keyword || "").trim(),
+            Code: String(item.Code || item.code || "").trim(),
+            Enabled: isEnabled
+          };
+        });
+
+        // Filter valid sequences
+        const activeRows = mappedRows.filter(r => {
+          return !!(r.Text && r.Keyword && r.Code);
+        });
+
+        if (active) {
+          // Guarantee a small beautiful minimum loading delay so users can experience the logo intro animation
+          const elapsed = Date.now() - startTime;
+          const minDelay = 1500;
+          const remaining = Math.max(0, minDelay - elapsed);
+
+          setTimeout(() => {
+            setRows(activeRows.length > 0 ? activeRows : DEMO_ROWS);
+            setLoading(false);
+          }, remaining);
+        }
+      } catch (err) {
+        console.warn("Secure backend fetch failed, using pre-configured sandbox fallback database:", err);
+        if (active) {
+          const elapsed = Date.now() - startTime;
+          const minDelay = 1500;
+          const remaining = Math.max(0, minDelay - elapsed);
+          
+          setTimeout(() => {
+            setRows(DEMO_ROWS);
+            setLoading(false);
+          }, remaining);
+        }
+      }
+    }
+
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Unlocked screen management
+  const [solvedRow, setSolvedRow] = useState<SheetRow | null>(null);
+
+  // Clean-up and lock again
+  const handleLockAgain = () => {
+    setSolvedRow(null);
+  };
+
+  const handleSolveSuccess = (matched: SheetRow) => {
+    setSolvedRow(matched);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-[#e0e0e0] flex flex-col items-center justify-start antialiased selection:bg-orange-500/30 selection:text-white">
+      
+      {/* Decorative orange flare background for deep aesthetic depth */}
+      <div className="fixed top-0 left-0 right-0 h-[40vh] bg-gradient-to-b from-orange-950/15 to-transparent pointer-events-none -z-10" />
+
+      {/* Main Container - Framed like a high-end device on large screens */}
+      <div className="w-full max-w-md min-h-screen bg-[#0d0d0d] shadow-2xl md:my-6 md:rounded-3xl md:min-h-[820px] flex flex-col overflow-hidden border border-white/5 relative">
+        
+        {/* Device Status/Ear bar for mockup style feel */}
+        <div className="hidden md:flex justify-between items-center px-6 py-2.5 bg-[#080808] text-gray-500 text-[10px] font-mono z-50 border-b border-white/3">
+          <div className="flex items-center gap-1.5 font-bold text-orange-500/80 uppercase tracking-widest text-[9px]">
+            <Smartphone className="w-3.5 h-3.5 text-orange-500" /> Station Node
+          </div>
+          <div className="bg-white/5 h-4 w-16 rounded-full flex items-center justify-center text-[7px] text-gray-400 font-bold uppercase tracking-widest">
+            Online
+          </div>
+          <div className="flex items-center gap-1">
+            <span>SECURE</span>
+            <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse-slow inline-block"></span>
+          </div>
+        </div>
+
+
+        {/* Dynamic Screen View Router */}
+        <div className="flex-1 flex flex-col justify-center bg-[#0d0d0d]">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex-1 flex flex-col justify-center items-center py-6"
+              >
+                <LoadingLogo message="Synchronizing live dataset with secure station..." />
+              </motion.div>
+            ) : solvedRow ? (
+              <CodeView 
+                key="unlocked"
+                matchedRow={solvedRow}
+                onReset={handleLockAgain}
+              />
+            ) : (
+              <ChallengeView 
+                key="challenges"
+                rows={rows}
+                onSolveSuccess={handleSolveSuccess}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+
+      </div>
+
+    </div>
+  );
+}

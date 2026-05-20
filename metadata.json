@@ -1,0 +1,6 @@
+{
+  "name": "Sheet Code Matcher",
+  "description": "An adaptive mobile web application that fetches secret codes and text keywords from Google Sheets, verifying user input, and unlocking code sheets with celebratory animations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
