@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { SheetRow } from "../types";
-import { Copy, Check, Sparkles } from "lucide-react";
+import { Copy, Check, Sparkles, Flame } from "lucide-react";
 
 interface CodeViewProps {
   matchedRow: SheetRow;
@@ -32,33 +32,50 @@ export function CodeView({ matchedRow, onReset }: CodeViewProps) {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="w-full flex-1 flex flex-col justify-between px-4 sm:px-5 py-3 sm:py-6 max-w-md mx-auto relative overflow-hidden congrats-gradient"
     >
-      {/* Absolute floating ambient sparks calibrated to Elegant Dark amber flares */}
+      {/* Absolute floating small fire graphics with multiple warm colors and glowing drop shadows */}
       <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute bg-orange-500 rounded-full"
-            style={{
-              width: Math.random() * 5 + 2,
-              height: Math.random() * 5 + 2,
-              left: `${Math.random() * 80 + 10}%`,
-              top: `${Math.random() * 60 + 20}%`,
-              opacity: 0.2,
-            }}
-            animate={{
-              y: [-10, -110],
-              x: [0, (Math.random() - 0.5) * 30],
-              opacity: [0, 0.6, 0],
-              scale: [0.8, 1.2, 0.4],
-            }}
-            transition={{
-              duration: Math.random() * 2 + 2,
-              repeat: Infinity,
-              delay: Math.random() * 1.5,
-              ease: "easeOut",
-            }}
-          />
-        ))}
+        {[...Array(8)].map((_, i) => {
+          const flameSize = Math.floor(Math.random() * 10) + 14; // natural size variance between 14px and 24px
+          return (
+            <motion.div
+              key={i}
+              className="absolute"
+              style={{
+                left: `${Math.random() * 80 + 10}%`,
+                top: `${Math.random() * 50 + 45}%`, // emerge from lower half of the viewport
+              }}
+              animate={{
+                y: [0, -280],
+                x: [0, (Math.random() - 0.5) * 60],
+                opacity: [0, 0.8, 0.5, 0],
+                scale: [0.4, 1.2, 0.8, 0.3],
+                rotate: [0, (Math.random() - 0.5) * 40],
+              }}
+              transition={{
+                duration: Math.random() * 4 + 4, // slower natural fluid float time
+                repeat: Infinity,
+                delay: Math.random() * 4,
+                ease: "easeInOut",
+              }}
+            >
+              <Flame
+                style={{
+                  width: flameSize,
+                  height: flameSize,
+                  filter: "drop-shadow(0 0 8px rgba(249, 115, 22, 0.6))",
+                }}
+                className={
+                  i % 3 === 0
+                    ? "text-red-500/40"
+                    : i % 3 === 1
+                    ? "text-orange-500/50"
+                    : "text-amber-400/40"
+                }
+                fill="currentColor"
+              />
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Header aligned with technical station look */}
