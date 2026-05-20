@@ -17,7 +17,7 @@ export default function App() {
 
     async function loadData() {
       try {
-        const response = await fetch(`/api/sheet-data?t=${Date.now()}`);
+        const response = await fetch("/api/sheet-data");
         if (!response.ok) {
           throw new Error(`Data fetch failed: Status ${response.status}`);
         }
