@@ -68,7 +68,7 @@ export function CodeView({ matchedRow, onReset }: CodeViewProps) {
           className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-gray-400 hover:text-white transition-all py-1 sm:py-1.5 px-2.5 sm:px-3 bg-white/5 border border-white/10 hover:border-white/20 rounded-full cursor-pointer"
           id="btn-solve-another"
         >
-          <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Back to list
+          <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Return to Terminal
         </button>
       </div>
 
