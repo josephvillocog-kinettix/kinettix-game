@@ -168,13 +168,10 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
                 />
               </div>
 
-              <div className="mt-6 space-y-1.5">
+              <div className="mt-6">
                 <span className="text-orange-500 font-mono text-[9px] tracking-[0.3em] uppercase block font-semibold">
                   Kinettix Node Locked
                 </span>
-                <p className="text-gray-400 text-[11px] font-sans max-w-[260px] leading-relaxed mx-auto">
-                  Challenge sequence is encrypted. Input the decrypter keyword below to unlock.
-                </p>
               </div>
             </div>
           )}
