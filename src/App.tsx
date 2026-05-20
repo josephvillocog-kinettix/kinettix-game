@@ -16,64 +16,81 @@ export default function App() {
     const startTime = Date.now();
 
     async function loadData() {
+      let rawList: any[] = [];
+      let success = false;
+
+      // 1. Try secure backend proxy first
       try {
+        console.log("Attempting to load dataset via secure server proxy...");
         const response = await fetch("/api/sheet-data");
-        if (!response.ok) {
-          throw new Error(`Data fetch failed: Status ${response.status}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            rawList = data;
+            success = true;
+          } else if (data && typeof data === "object") {
+            const matchingKey = Object.keys(data).find(k => Array.isArray(data[k]));
+            if (matchingKey) {
+              rawList = data[matchingKey];
+              success = true;
+            }
+          }
+        } else {
+          console.warn(`Server proxy returned non-200 status: ${response.status}`);
         }
-        const data = await response.json();
-        
-        // Match structural records dynamically
-        let rawList: any[] = [];
-        if (Array.isArray(data)) {
-          rawList = data;
-        } else if (data && typeof data === "object") {
-          const matchingKey = Object.keys(data).find(k => Array.isArray(data[k]));
-          if (matchingKey) rawList = data[matchingKey];
+      } catch (proxyError) {
+        console.warn("Server proxy request failed, will attempt direct fallback:", proxyError);
+      }
+
+      // 2. Try direct Google sheets script fetch fallback from client-side if server proxy didn't succeed
+      if (!success || rawList.length === 0) {
+        try {
+          console.log("Invoking client-side direct fetch failover...");
+          const directUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
+          const response = await fetch(directUrl);
+          if (response.ok) {
+            const data = await response.json();
+            if (Array.isArray(data)) {
+              rawList = data;
+            } else if (data && typeof data === "object") {
+              const matchingKey = Object.keys(data).find(k => Array.isArray(data[k]));
+              if (matchingKey) rawList = data[matchingKey];
+            }
+          }
+        } catch (directError) {
+          console.error("Direct browser fetch failover also failed:", directError);
         }
+      }
 
-        const mappedRows: SheetRow[] = rawList.map((item: any) => {
-          const rawEnabled = item.enabled !== undefined ? item.enabled : (item.Enabled !== undefined ? item.Enabled : true);
-          const isEnabled = String(rawEnabled).toLowerCase().trim() === "true" || 
-                            String(rawEnabled).toLowerCase().trim() === "yes" || 
-                            String(rawEnabled).toLowerCase().trim() === "1" || 
-                            rawEnabled === true;
-          return {
-            Text: String(item.text || item.Text || "").trim(),
-            Keyword: String(item.keyword || item.Keyword || "").trim(),
-            Code: String(item.code || item.Code || "").trim(),
-            Enabled: isEnabled
-          };
-        });
+      const mappedRows: SheetRow[] = rawList.map((item: any) => {
+        const rawEnabled = item.enabled !== undefined ? item.enabled : (item.Enabled !== undefined ? item.Enabled : true);
+        const isEnabled = String(rawEnabled).toLowerCase().trim() === "true" || 
+                          String(rawEnabled).toLowerCase().trim() === "yes" || 
+                          String(rawEnabled).toLowerCase().trim() === "1" || 
+                          rawEnabled === true;
+        return {
+          Text: String(item.text || item.Text || "").trim(),
+          Keyword: String(item.keyword || item.Keyword || "").trim(),
+          Code: String(item.code || item.Code || "").trim(),
+          Enabled: isEnabled
+        };
+      });
 
-        // Filter valid sequences
-        const activeRows = mappedRows.filter(r => {
-          return !!(r.Text && r.Keyword && r.Code);
-        });
+      // Filter valid sequences
+      const activeRows = mappedRows.filter(r => {
+        return !!(r.Text && r.Keyword && r.Code);
+      });
 
-        if (active) {
-          // Guarantee a small beautiful minimum loading delay so users can experience the logo intro animation
-          const elapsed = Date.now() - startTime;
-          const minDelay = 1500;
-          const remaining = Math.max(0, minDelay - elapsed);
+      if (active) {
+        // Guarantee a small beautiful minimum loading delay so users can experience the logo intro animation
+        const elapsed = Date.now() - startTime;
+        const minDelay = 1500;
+        const remaining = Math.max(0, minDelay - elapsed);
 
-          setTimeout(() => {
-            setRows(activeRows);
-            setLoading(false);
-          }, remaining);
-        }
-      } catch (err) {
-        console.warn("Secure backend fetch failed:", err);
-        if (active) {
-          const elapsed = Date.now() - startTime;
-          const minDelay = 1500;
-          const remaining = Math.max(0, minDelay - elapsed);
-          
-          setTimeout(() => {
-            setRows([]);
-            setLoading(false);
-          }, remaining);
-        }
+        setTimeout(() => {
+          setRows(activeRows);
+          setLoading(false);
+        }, remaining);
       }
     }
 

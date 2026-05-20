@@ -5,6 +5,35 @@ import { createServer as createViteServer } from "vite";
 
 dotenv.config();
 
+// Helper to fetch with explicit redirect following and headers
+async function fetchWithRedirects(url: string, options: any = {}, maxRedirects = 5): Promise<Response> {
+  if (maxRedirects < 0) {
+    throw new Error("Too many redirects");
+  }
+
+  const mergedHeaders = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    ...options.headers,
+  };
+
+  const res = await fetch(url, {
+    ...options,
+    headers: mergedHeaders,
+    redirect: "manual",
+  });
+
+  if (res.status >= 300 && res.status < 400) {
+    const location = res.headers.get("location");
+    if (location) {
+      console.log(`Following redirect (${res.status}) to: ${location}`);
+      return fetchWithRedirects(location, options, maxRedirects - 1);
+    }
+  }
+
+  return res;
+}
+
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -17,7 +46,7 @@ async function startServer() {
       // Plain updated Google Sheet web app URL (as requested and tested successfully)
       const sheetUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
       
-      const response = await fetch(sheetUrl, {
+      const response = await fetchWithRedirects(sheetUrl, {
         method: "GET"
       });
 
@@ -26,13 +55,13 @@ async function startServer() {
       }
 
       const rawText = await response.text();
-      console.log("Successfully fetched raw text from Google Sheets Apps Script:", rawText);
+      console.log("Successfully fetched raw text from Google Sheets Apps Script:", rawText.slice(0, 300));
       
       let data;
       try {
         data = JSON.parse(rawText);
       } catch (parseError: any) {
-        throw new Error(`Failed to parse Apps Script response as JSON: ${parseError.message}. Response was: ${rawText}`);
+        throw new Error(`Failed to parse Apps Script response as JSON: ${parseError.message}. Response prefix was: ${rawText.slice(0, 200)}`);
       }
 
       console.log("Parsed Google Sheets Apps Script data:", data);
