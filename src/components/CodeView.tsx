@@ -69,44 +69,41 @@ export function CodeView({ matchedRow, onReset }: CodeViewProps) {
       {/* Main congratulatory visual area */}
       <div className="flex-1 flex flex-col justify-center items-center text-center py-2 sm:py-6 z-10 my-auto">
         
-        {/* Glowing Badge Container with orange indicators */}
+        {/* Glowing Badge Container with orange indicators and Tiki graphics */}
         <motion.div
           initial={{ scale: 0.8, rotate: -10 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 120, delay: 0.1 }}
-          className="relative inline-flex mb-3 sm:mb-6"
+          className="relative inline-flex mb-4 sm:mb-8"
         >
-          <div className="absolute inset-0 bg-orange-500/10 rounded-full blur-xl animate-pulse-slow"></div>
-          <div className="relative bg-[#111] p-3 sm:p-4 rounded-full shadow-lg border border-white/10 animate-float flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20">
-            <svg
-              viewBox="0 0 1000 1000"
-              className="w-8 h-8 sm:w-10 sm:h-10 drop-shadow-[0_0_12px_rgba(44,181,232,0.25)]"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Blue Chevron (Left Part) */}
-              <path
-                d="M 60 40 H 350 L 580 500 L 350 960 H 60 L 290 500 Z"
-                fill="#2cb5e8"
-              />
-              {/* Green Shape (Top-Right Part) */}
-              <path
-                d="M 640 40 H 930 L 670 430 H 490 L 560 330 Z"
-                fill="#89d027"
-              />
-              {/* Orange Shape (Bottom-Right Part) */}
-              <path
-                d="M 490 570 H 670 L 930 960 H 640 L 565 670 Z"
-                fill="#f39f37"
-              />
-            </svg>
+          {/* External cyber-orbital spinning ring and pulse glow */}
+          <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-xl animate-pulse-slow"></div>
+          <div className="absolute -inset-3 sm:-inset-4 border border-orange-500/20 border-dashed rounded-full animate-pulse pointer-events-none z-0" />
+          <motion.div
+            className="absolute -inset-1.5 sm:-inset-2 border border-orange-500/40 border-dotted rounded-full pointer-events-none z-0"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+          />
+
+          {/* Premium styled circular image holder */}
+          <div className="relative bg-[#0d0d0d] p-3 sm:p-4 rounded-full shadow-[0_0_30px_rgba(249,115,22,0.25)] border border-orange-500/30 animate-float flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 z-10 overflow-hidden">
+            {/* Atmospheric inner gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 via-transparent to-orange-950/30 pointer-events-none" />
+            
+            <img
+              src="/assets/tikimask.png"
+              referrerPolicy="no-referrer"
+              alt="Kinettix Tiki Mask"
+              className="w-[85%] h-[85%] object-contain filter drop-shadow-[0_0_12px_rgba(249,115,22,0.75)] select-none relative z-10"
+            />
           </div>
+
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-1 -right-1 text-orange-400 bg-black/80 px-1 py-1 rounded-full shadow-xs border border-white/10"
+            className="absolute -top-1 -right-1 text-orange-400 bg-black/90 p-1.5 rounded-full shadow-lg border border-orange-500/30 z-20"
           >
-            <Sparkles className="w-2.5 h-2.5 text-orange-400" />
+            <Sparkles className="w-3.5 h-3.5 text-orange-400" />
           </motion.div>
         </motion.div>
 
