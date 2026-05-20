@@ -14,10 +14,19 @@ async function startServer() {
     try {
       console.log("Fetching Google Sheets Apps Script data...");
       
+      // Set explicit non-caching headers to bypass any browser, CDN, or nginx caching
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+      res.setHeader("Pragma", "no-cache");
+      res.setHeader("Expires", "0");
+      
       // Plain updated Google Sheet web app URL (as requested and tested successfully)
       const sheetUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
       
-      const response = await fetch(sheetUrl, {
+      // Append a cache-buster parameter to ensure Google Apps Script fetches the live data
+      const separator = sheetUrl.includes("?") ? "&" : "?";
+      const freshSheetUrl = `${sheetUrl}${separator}t=${Date.now()}`;
+      
+      const response = await fetch(freshSheetUrl, {
         method: "GET"
       });
 
