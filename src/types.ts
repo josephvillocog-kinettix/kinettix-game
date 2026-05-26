@@ -3,6 +3,8 @@ export interface SheetRow {
   Keyword: string;
   Code: string;
   Enabled: boolean | string;
+  Text2?: string;
+  Keyword2?: string;
 }
 
 export interface ApiResponse {

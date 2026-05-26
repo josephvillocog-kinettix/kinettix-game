@@ -123,7 +123,7 @@ async function startServer() {
       console.log("Fetching Google Sheets Apps Script data...");
       
       // Plain updated Google Sheet web app URL (as requested and tested successfully)
-      const sheetUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
+      const sheetUrl = "https://script.google.com/macros/s/AKfycbxi1CJQrLEgDvM2xgQQSeEWfDrR3MbRtLlz3zUGtA7Ll1SX26htKXGKktUU8cEPqVRu/exec";
       
       const response = await fetchWithRedirects(sheetUrl, {
         method: "GET"
@@ -164,11 +164,13 @@ async function startServer() {
                           String(rawEnabled).toLowerCase().trim() === "yes" || 
                           String(rawEnabled).toLowerCase().trim() === "1" || 
                           rawEnabled === true;
-        // Build object and decrypt the key fields (text, keyword, code)
+        // Build object and return raw key fields (text, keyword, code, text2, keyword2) to be decrypted in client
         return {
-          text: decryptField(String(item.text || item.Text || "").trim()),
-          keyword: decryptField(String(item.keyword || item.Keyword || "").trim()),
-          code: decryptField(String(item.code || item.Code || "").trim()),
+          text: String(item.text || item.Text || "").trim(),
+          keyword: String(item.keyword || item.Keyword || "").trim(),
+          code: String(item.code || item.Code || "").trim(),
+          text2: String(item.text2 || item.Text2 || "").trim(),
+          keyword2: String(item.keyword2 || item.Keyword2 || "").trim(),
           enabled: isEnabled
         };
       });

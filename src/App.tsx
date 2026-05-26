@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { SheetRow } from "./types";
 import { ChallengeView } from "./components/ChallengeView";
+import { ChallengeTwoView } from "./components/ChallengeTwoView";
 import { CodeView } from "./components/CodeView";
 import { LoadingLogo } from "./components/LoadingLogo";
 import { KeyRound, Smartphone } from "lucide-react";
@@ -35,18 +36,22 @@ function decryptField(cipherText: string, key: string = "Kinettix"): string {
       decryptedXOR += String.fromCharCode(charCode);
     }
 
-    // Validate if XOR decryption result yields only printable characters
-    let isPrintable = true;
+    // Validate if XOR decryption result yields sufficient printable characters
+    let printableCount = 0;
     for (let i = 0; i < decryptedXOR.length; i++) {
       const code = decryptedXOR.charCodeAt(i);
       // Clean ASCII printable range space (32) to tilde (126), plus common spacing: Tab (9), LF (10), CR (13)
-      if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code > 126) {
-        isPrintable = false;
-        break;
+      if ((code >= 32 && code <= 126) || code === 9 || code === 10 || code === 13) {
+        printableCount++;
       }
     }
 
-    if (isPrintable && decryptedXOR.length > 0) {
+    const isPrintable = decryptedXOR.length > 0 && (
+      (decryptedXOR.length < 12 && printableCount === decryptedXOR.length) ||
+      (decryptedXOR.length >= 12 && (printableCount / decryptedXOR.length) >= 0.70)
+    );
+
+    if (isPrintable) {
       return decryptedXOR;
     }
 
@@ -125,7 +130,7 @@ export default function App() {
       if (!success || rawList.length === 0) {
         try {
           console.log("Invoking client-side direct fetch failover...");
-          const directUrl = "https://script.google.com/macros/s/AKfycbxrEM1HxxFXPRgd0Nw0J4PN8IyDjU_qs8wK-vFjJ1kIDyBOmPDCM0rRSZvorcZRpwa1/exec";
+          const directUrl = "https://script.google.com/macros/s/AKfycbxi1CJQrLEgDvM2xgQQSeEWfDrR3MbRtLlz3zUGtA7Ll1SX26htKXGKktUU8cEPqVRu/exec";
           const response = await fetch(directUrl);
           if (response.ok) {
             const data = await response.json();
@@ -151,6 +156,8 @@ export default function App() {
           Text: decryptField(String(item.text || item.Text || "").trim()),
           Keyword: decryptField(String(item.keyword || item.Keyword || "").trim()),
           Code: decryptField(String(item.code || item.Code || "").trim()),
+          Text2: decryptField(String(item.text2 || item.Text2 || "").trim()),
+          Keyword2: decryptField(String(item.keyword2 || item.Keyword2 || "").trim()),
           Enabled: isEnabled
         };
       });
@@ -181,14 +188,31 @@ export default function App() {
 
   // Unlocked screen management
   const [solvedRow, setSolvedRow] = useState<SheetRow | null>(null);
+  const [stageTwoSolved, setStageTwoSolved] = useState(false);
 
   // Clean-up and lock again
   const handleLockAgain = () => {
     setSolvedRow(null);
+    setStageTwoSolved(false);
   };
 
   const handleSolveSuccess = (matched: SheetRow) => {
     setSolvedRow(matched);
+    const hasStageTwo = !!(matched.Text2 && matched.Text2.trim() && matched.Keyword2 && matched.Keyword2.trim());
+    if (!hasStageTwo) {
+      setStageTwoSolved(true);
+    } else {
+      setStageTwoSolved(false);
+    }
+  };
+
+  const handleStageTwoSuccess = () => {
+    setStageTwoSolved(true);
+  };
+
+  const handleBackToStageOne = () => {
+    setSolvedRow(null);
+    setStageTwoSolved(false);
   };
 
   return (
@@ -254,11 +278,18 @@ export default function App() {
               >
                 <LoadingLogo message="Synchronizing live dataset with secure station..." />
               </motion.div>
-            ) : solvedRow ? (
+            ) : solvedRow && stageTwoSolved ? (
               <CodeView 
                 key="unlocked"
                 matchedRow={solvedRow}
                 onReset={handleLockAgain}
+              />
+            ) : solvedRow && !stageTwoSolved ? (
+              <ChallengeTwoView
+                key="stage2"
+                matchedRow={solvedRow}
+                onSolveSuccess={handleStageTwoSuccess}
+                onBackToStageOne={handleBackToStageOne}
               />
             ) : (
               <ChallengeView 
