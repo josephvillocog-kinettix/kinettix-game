@@ -1,5 +1,84 @@
 // Secure serverless function to proxy Google Sheets Apps Script data on Vercel deployments.
 
+// Robust Base64 + Repeating-key XOR Decryption with fallback compatibility
+function decryptField(cipherText: string, key: string = "Kinettix"): string {
+  if (!cipherText) return "";
+  const str = cipherText.trim();
+  if (str.length === 0) return "";
+
+  // Base64 regex check for valid base64 pattern (ignoring brief non-base64 characters)
+  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})?$/;
+  if (str.length < 3 || !base64Regex.test(str)) {
+    return cipherText;
+  }
+
+  try {
+    let binary = "";
+    if (typeof Buffer !== "undefined") {
+      binary = Buffer.from(str, "base64").toString("binary");
+    } else if (typeof atob !== "undefined") {
+      binary = atob(str);
+    } else {
+      return cipherText;
+    }
+
+    // Try XOR decryption with repeating key "Kinettix"
+    let decryptedXOR = "";
+    for (let i = 0; i < binary.length; i++) {
+      const charCode = binary.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      decryptedXOR += String.fromCharCode(charCode);
+    }
+
+    // Validate if XOR decryption result yields only printable characters
+    let isPrintable = true;
+    for (let i = 0; i < decryptedXOR.length; i++) {
+      const code = decryptedXOR.charCodeAt(i);
+      // Clean ASCII printable range space (32) to tilde (126), plus common spacing: Tab (9), LF (10), CR (13)
+      if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code > 126) {
+        isPrintable = false;
+        break;
+      }
+    }
+
+    if (isPrintable && decryptedXOR.length > 0) {
+      return decryptedXOR;
+    }
+
+    // Rollback 1: Try base64 decoding alone (case where Google Sheet encoded plain text directly)
+    let plainBase64 = "";
+    try {
+      if (typeof Buffer !== "undefined") {
+        plainBase64 = Buffer.from(str, "base64").toString("utf8");
+      } else if (typeof atob !== "undefined") {
+        plainBase64 = decodeURIComponent(escape(atob(str)));
+      }
+    } catch {
+      plainBase64 = "";
+    }
+
+    let isPlainPrintable = true;
+    if (plainBase64.length > 0) {
+      for (let i = 0; i < plainBase64.length; i++) {
+        const code = plainBase64.charCodeAt(i);
+        if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code > 126) {
+          isPlainPrintable = false;
+          break;
+        }
+      }
+    } else {
+      isPlainPrintable = false;
+    }
+
+    if (isPlainPrintable) {
+      return plainBase64;
+    }
+
+    return cipherText;
+  } catch (err) {
+    return cipherText;
+  }
+}
+
 export default async function handler(req: any, res: any) {
   // Support primarily GET requests
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -51,11 +130,11 @@ export default async function handler(req: any, res: any) {
                         String(rawEnabled).toLowerCase().trim() === "yes" || 
                         String(rawEnabled).toLowerCase().trim() === "1" || 
                         rawEnabled === true;
-      // Build object in the exact requested key sequence: text, keyword, code, enabled
+      // Build object and decrypt fields dynamically
       return {
-        text: String(item.text || item.Text || "").trim(),
-        keyword: String(item.keyword || item.Keyword || "").trim(),
-        code: String(item.code || item.Code || "").trim(),
+        text: decryptField(String(item.text || item.Text || "").trim()),
+        keyword: decryptField(String(item.keyword || item.Keyword || "").trim()),
+        code: decryptField(String(item.code || item.Code || "").trim()),
         enabled: isEnabled
       };
     });

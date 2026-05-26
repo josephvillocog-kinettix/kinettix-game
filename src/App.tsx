@@ -6,6 +6,85 @@ import { CodeView } from "./components/CodeView";
 import { LoadingLogo } from "./components/LoadingLogo";
 import { KeyRound, Smartphone } from "lucide-react";
 
+// Robust Base64 + Repeating-key XOR Decryption with fallback compatibility inside client
+function decryptField(cipherText: string, key: string = "Kinettix"): string {
+  if (!cipherText) return "";
+  const str = cipherText.trim();
+  if (str.length === 0) return "";
+
+  // Base64 regex check for valid base64 pattern (ignoring brief non-base64 characters)
+  const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{4})?$/;
+  if (str.length < 3 || !base64Regex.test(str)) {
+    return cipherText;
+  }
+
+  try {
+    let binary = "";
+    if (typeof atob !== "undefined") {
+      binary = atob(str);
+    } else if (typeof Buffer !== "undefined") {
+      binary = Buffer.from(str, "base64").toString("binary");
+    } else {
+      return cipherText;
+    }
+
+    // Try XOR decryption with repeating key "Kinettix"
+    let decryptedXOR = "";
+    for (let i = 0; i < binary.length; i++) {
+      const charCode = binary.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+      decryptedXOR += String.fromCharCode(charCode);
+    }
+
+    // Validate if XOR decryption result yields only printable characters
+    let isPrintable = true;
+    for (let i = 0; i < decryptedXOR.length; i++) {
+      const code = decryptedXOR.charCodeAt(i);
+      // Clean ASCII printable range space (32) to tilde (126), plus common spacing: Tab (9), LF (10), CR (13)
+      if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code > 126) {
+        isPrintable = false;
+        break;
+      }
+    }
+
+    if (isPrintable && decryptedXOR.length > 0) {
+      return decryptedXOR;
+    }
+
+    // Rollback 1: Try base64 decoding alone (case where Google Sheet encoded plain text directly)
+    let plainBase64 = "";
+    try {
+      if (typeof atob !== "undefined") {
+        plainBase64 = decodeURIComponent(escape(atob(str)));
+      } else if (typeof Buffer !== "undefined") {
+        plainBase64 = Buffer.from(str, "base64").toString("utf8");
+      }
+    } catch {
+      plainBase64 = "";
+    }
+
+    let isPlainPrintable = true;
+    if (plainBase64.length > 0) {
+      for (let i = 0; i < plainBase64.length; i++) {
+        const code = plainBase64.charCodeAt(i);
+        if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code > 126) {
+          isPlainPrintable = false;
+          break;
+        }
+      }
+    } else {
+      isPlainPrintable = false;
+    }
+
+    if (isPlainPrintable) {
+      return plainBase64;
+    }
+
+    return cipherText;
+  } catch (err) {
+    return cipherText;
+  }
+}
+
 export default function App() {
   const [rows, setRows] = useState<SheetRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,9 +148,9 @@ export default function App() {
                           String(rawEnabled).toLowerCase().trim() === "1" || 
                           rawEnabled === true;
         return {
-          Text: String(item.text || item.Text || "").trim(),
-          Keyword: String(item.keyword || item.Keyword || "").trim(),
-          Code: String(item.code || item.Code || "").trim(),
+          Text: decryptField(String(item.text || item.Text || "").trim()),
+          Keyword: decryptField(String(item.keyword || item.Keyword || "").trim()),
+          Code: decryptField(String(item.code || item.Code || "").trim()),
           Enabled: isEnabled
         };
       });
