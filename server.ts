@@ -164,13 +164,11 @@ async function startServer() {
                           String(rawEnabled).toLowerCase().trim() === "yes" || 
                           String(rawEnabled).toLowerCase().trim() === "1" || 
                           rawEnabled === true;
-        // Build object and return raw key fields (text, keyword, code, text2, keyword2) to be decrypted in client
+        // Build object and return raw key fields (text, keyword, code) to be decrypted in client
         return {
           text: String(item.text || item.Text || "").trim(),
           keyword: String(item.keyword || item.Keyword || "").trim(),
           code: String(item.code || item.Code || "").trim(),
-          text2: String(item.text2 || item.Text2 || "").trim(),
-          keyword2: String(item.keyword2 || item.Keyword2 || "").trim(),
           enabled: isEnabled
         };
       });
