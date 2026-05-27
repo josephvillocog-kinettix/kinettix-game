@@ -29,32 +29,12 @@ export function InitializationView({ onStart }: InitializationViewProps) {
         <div className="relative w-28 h-28 flex items-center justify-center mb-8">
           <div className="absolute inset-0 bg-orange-500/10 blur-2xl rounded-full scale-90 animate-pulse-slow" />
           
-          <svg
-            viewBox="0 0 1000 1000"
-            className="w-20 h-20 drop-shadow-[0_0_20px_rgba(249,115,22,0.25)] relative"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Minimal SVG stylized watermark to ground the theme */}
-            {/* Blue Chevron (Left Part) */}
-            <path
-              d="M 60 40 H 350 L 580 500 L 350 960 H 60 L 290 500 Z"
-              fill="#2cb5e8"
-              opacity="0.8"
-            />
-            {/* Green Shape (Top-Right Part) */}
-            <path
-              d="M 640 40 H 930 L 670 430 H 490 L 560 330 Z"
-              fill="#89d027"
-              opacity="0.8"
-            />
-            {/* Orange Shape (Bottom-Right Part) */}
-            <path
-              d="M 490 570 H 670 L 930 960 H 640 L 565 670 Z"
-              fill="#f39f37"
-              opacity="0.9"
-            />
-          </svg>
+          <img
+            src="/assets/tikimask.png"
+            referrerPolicy="no-referrer"
+            alt="Tiki Mask Logo"
+            className="w-20 h-20 object-contain filter drop-shadow-[0_0_20px_rgba(249,115,22,0.25)] relative z-10"
+          />
 
           {/* Radar border sweep */}
           <motion.div 

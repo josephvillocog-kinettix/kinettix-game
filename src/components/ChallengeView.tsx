@@ -113,54 +113,20 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
           <div className="flex flex-col items-center justify-center p-4 text-center select-none w-full">
             <div className="relative w-36 h-36 flex items-center justify-center">
               {/* Ambient glow container */}
-              <div className="absolute inset-0 bg-blue-500/10 blur-3xl rounded-full scale-75 animate-pulse" />
+              <div className="absolute inset-0 bg-orange-500/10 blur-3xl rounded-full scale-75 animate-pulse" />
               
-              <svg
-                viewBox="0 0 1000 1000"
-                className="w-24 h-24 md:w-28 md:h-28 drop-shadow-[0_0_20px_rgba(44,181,232,0.25)] relative z-10"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {/* Blue Chevron (Left Part) */}
-                <motion.path
-                  d="M 60 40 H 350 L 580 500 L 350 960 H 60 L 290 500 Z"
-                  fill="#2cb5e8"
-                  initial={{ opacity: 0, x: -60, scale: 0.9 }}
-                  animate={{ 
-                    opacity: 1, 
-                    x: 0, 
-                    scale: 1,
-                    transition: { duration: 0.8, ease: "easeOut" } 
-                  }}
-                  whileHover={{ scale: 1.05 }}
-                />
-
-                {/* Green Shape (Top-Right Part) */}
-                <motion.path
-                  d="M 640 40 H 930 L 670 430 H 490 L 560 330 Z"
-                  fill="#89d027"
-                  initial={{ opacity: 0, y: -60, scale: 0.9 }}
-                  animate={{ 
-                    opacity: 1, 
-                    y: 0, 
-                    scale: 1,
-                    transition: { duration: 0.8, delay: 0.15, ease: "easeOut" } 
-                  }}
-                />
-
-                {/* Orange Shape (Bottom-Right Part) */}
-                <motion.path
-                  d="M 490 570 H 670 L 930 960 H 640 L 565 670 Z"
-                  fill="#f39f37"
-                  initial={{ opacity: 0, y: 60, scale: 0.9 }}
-                  animate={{ 
-                    opacity: 1, 
-                    y: 0, 
-                    scale: 1,
-                    transition: { duration: 0.8, delay: 0.25, ease: "easeOut" } 
-                  }}
-                />
-              </svg>
+              <motion.img
+                src="/assets/tikimask.png"
+                referrerPolicy="no-referrer"
+                alt="Tiki Mask Logo"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain filter drop-shadow-[0_0_20px_rgba(249,115,22,0.5)] select-none relative z-10"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1,
+                  transition: { duration: 0.8, ease: "easeOut" } 
+                }}
+              />
 
               {/* Outer orbital rings for immersive cyber feel */}
               <motion.div 

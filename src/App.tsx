@@ -204,28 +204,12 @@ export default function App() {
         
         {/* Seamless Transparent Logo Watermark across all pages */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
-          <svg
-            viewBox="0 0 1000 1000"
-            className="w-4/5 max-w-[280px] aspect-square opacity-[0.045] drop-shadow-[0_0_40px_rgba(44,181,232,0.15)]"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            {/* Blue Chevron (Left Part) */}
-            <path
-              d="M 60 40 H 350 L 580 500 L 350 960 H 60 L 290 500 Z"
-              fill="#2cb5e8"
-            />
-            {/* Green Shape (Top-Right Part) */}
-            <path
-              d="M 640 40 H 930 L 670 430 H 490 L 560 330 Z"
-              fill="#89d027"
-            />
-            {/* Orange Shape (Bottom-Right Part) */}
-            <path
-              d="M 490 570 H 670 L 930 960 H 640 L 565 670 Z"
-              fill="#f39f37"
-            />
-          </svg>
+          <img
+            src="/assets/tikimask.png"
+            referrerPolicy="no-referrer"
+            alt="Seamless Transparent Logo Watermark"
+            className="w-4/5 max-w-[280px] aspect-square opacity-[0.045] filter drop-shadow-[0_0_40px_rgba(249,115,22,0.15)]"
+          />
         </div>
 
         {/* Device Status/Ear bar for mockup style feel */}
