@@ -153,14 +153,14 @@ export function CodeView({ matchedRow, onReset }: CodeViewProps) {
           </div>
           
           <code 
-            className="w-full break-all font-mono font-semibold text-white tracking-tighter leading-none text-center select-all py-3 sm:py-4 px-2 my-1 block text-lg sm:text-xl"
+            className="w-full break-all font-mono font-semibold text-white tracking-tighter leading-none text-center select-all py-3 sm:py-4 px-2 my-1 block"
             style={{
               fontSize: (() => {
                 const len = (matchedRow.Code || "").length;
-                if (len < 8) return "clamp(1.5rem, 8vw, 3rem)";
-                if (len < 16) return "clamp(1.3rem, 6.5vw, 2.4rem)";
-                if (len < 24) return "clamp(1.1rem, 5.5vw, 1.8rem)";
-                return "clamp(0.85rem, 4.5vw, 1.35rem)";
+                if (len < 8) return "clamp(1.2rem, 6.4vw, 2.4rem)";
+                if (len < 16) return "clamp(1.04rem, 5.2vw, 1.92rem)";
+                if (len < 24) return "clamp(0.88rem, 4.4vw, 1.44rem)";
+                return "clamp(0.68rem, 3.6vw, 1.08rem)";
               })(),
             }}
           >

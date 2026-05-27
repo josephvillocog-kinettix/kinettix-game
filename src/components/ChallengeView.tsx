@@ -86,7 +86,7 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
         {activeRow.Enabled ? (
           <>
             <span className="text-orange-500 font-mono text-[11px] tracking-[0.5em] uppercase mb-3 block">
-              The Challenge
+              Individual Challenge
             </span>
             
             <h1 

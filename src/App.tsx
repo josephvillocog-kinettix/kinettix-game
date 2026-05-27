@@ -4,6 +4,7 @@ import { SheetRow } from "./types";
 import { ChallengeView } from "./components/ChallengeView";
 import { CodeView } from "./components/CodeView";
 import { LoadingLogo } from "./components/LoadingLogo";
+import { InitializationView } from "./components/InitializationView";
 import { KeyRound, Smartphone } from "lucide-react";
 
 // Robust Base64 + Repeating-key XOR Decryption with fallback compatibility inside client
@@ -88,6 +89,7 @@ function decryptField(cipherText: string, key: string = "Kinettix"): string {
 export default function App() {
   const [rows, setRows] = useState<SheetRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [started, setStarted] = useState(false);
 
   // Fetch the sheet data securely from our secure backend proxy route
   useEffect(() => {
@@ -254,6 +256,11 @@ export default function App() {
               >
                 <LoadingLogo message="Synchronizing live dataset with secure station..." />
               </motion.div>
+            ) : !started ? (
+              <InitializationView 
+                key="init"
+                onStart={() => setStarted(true)}
+              />
             ) : solvedRow ? (
               <CodeView 
                 key="unlocked"
