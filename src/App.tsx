@@ -5,6 +5,7 @@ import { ChallengeView } from "./components/ChallengeView";
 import { CodeView } from "./components/CodeView";
 import { LoadingLogo } from "./components/LoadingLogo";
 import { InitializationView } from "./components/InitializationView";
+import { EmbersBackground } from "./components/EmbersBackground";
 import { KeyRound, Smartphone } from "lucide-react";
 
 // Robust Base64 + Repeating-key XOR Decryption with fallback compatibility inside client
@@ -202,7 +203,7 @@ export default function App() {
       {/* Main Container - Framed like a high-end device on large screens */}
       <div className="w-full max-w-md min-h-screen bg-[#0d0d0d] shadow-2xl md:my-6 md:rounded-3xl md:min-h-[820px] flex flex-col overflow-hidden border border-white/5 relative">
         
-        {/* Seamless Transparent Logo Watermark across all pages */}
+        {/* Seamless Transparent Logo Watermark across all pages (including rising embers) */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
           <img
             src="/assets/tikimask.png"
@@ -211,6 +212,9 @@ export default function App() {
             className="w-4/5 max-w-[280px] aspect-square opacity-[0.045] filter drop-shadow-[0_0_40px_rgba(249,115,22,0.15)]"
           />
         </div>
+
+        {/* Floating warm embers background graphic rising from bottom to top */}
+        <EmbersBackground />
 
         {/* Device Status/Ear bar for mockup style feel */}
         <div className="hidden md:flex justify-between items-center px-6 py-2.5 bg-[#080808] text-gray-500 text-[10px] font-mono z-50 border-b border-white/3">

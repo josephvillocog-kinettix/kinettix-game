@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { SheetRow } from "../types";
 import { Lock, HelpCircle } from "lucide-react";
 
@@ -9,9 +9,21 @@ interface ChallengeViewProps {
   key?: string;
 }
 
+interface Particle {
+  id: number;
+  x: number; // Ending X coordinate
+  y: number; // Ending Y coordinate
+  size: number;
+  color: string;
+  duration: number;
+  scale: number;
+}
+
 export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
   const [userInput, setUserInput] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isExploding, setIsExploding] = useState(false);
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   const activeRow = rows.length > 0 ? rows[0] : null;
 
@@ -28,7 +40,7 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
 
   const verifyMatch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeRow) return;
+    if (!activeRow || isExploding) return;
 
     const trimmedInput = userInput.trim().toLowerCase();
     const targetKeyword = (activeRow.Keyword || activeRow.Text || "").trim().toLowerCase();
@@ -38,7 +50,41 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
     const normalizedTarget = targetKeyword.replace(/[\s_-]/g, "");
 
     if (normalizedInput === normalizedTarget) {
-      onSolveSuccess(activeRow);
+      setIsExploding(true);
+
+      // Create 35 dynamic exploding ember particles
+      const newParticles: Particle[] = [];
+      const colors = [
+        "from-orange-500 to-amber-400",
+        "from-amber-500 to-yellow-300",
+        "from-red-600 to-orange-400",
+        "from-yellow-400 to-amber-200"
+      ];
+
+      for (let i = 0; i < 35; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        // Scatter distance from center of the button
+        const distance = Math.random() * 120 + 40;
+        
+        newParticles.push({
+          id: i,
+          // Calculate dynamic directional explosion vector
+          x: Math.cos(angle) * distance,
+          // Negative Y component extra bias so they float upwards in a nice chimney draft look
+          y: Math.sin(angle) * (distance * 0.8) - (Math.random() * 80 + 30),
+          size: Math.random() * 5 + 3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          duration: Math.random() * 0.4 + 0.4, // 0.4s to 0.8s
+          scale: Math.random() * 0.6 + 0.6
+        });
+      }
+
+      setParticles(newParticles);
+
+      // Wait for the glorious explosion to finish before changing the phase
+      setTimeout(() => {
+        onSolveSuccess(activeRow);
+      }, 850);
     } else {
       setErrorMessage("Incorrect match. Please check spelling and try again.");
     }
@@ -163,22 +209,72 @@ export function ChallengeView({ rows, onSolveSuccess }: ChallengeViewProps) {
                 <input
                   id="keyword-solver-input"
                   type="text"
-                  placeholder="Enter keyword..."
+                  placeholder={isExploding ? "DECRYPTING..." : "Enter keyword..."}
                   value={userInput}
                   onChange={handleInputChange}
+                  disabled={isExploding}
                   autoComplete="off"
                   autoFocus
-                  className="w-full bg-[#111] border border-white/10 rounded-full py-4 px-6 pr-24 text-sm text-[#e0e0e0] outline-none transition-all input-glow placeholder:text-gray-700"
+                  className="w-full bg-[#111] border border-white/10 rounded-full py-4 px-6 pr-24 text-sm text-[#e0e0e0] outline-none transition-all input-glow placeholder:text-gray-700 disabled:opacity-50"
                 />
+
+                {/* Particle render overlay positioned where the button is */}
+                <AnimatePresence>
+                  {isExploding && (
+                    <div className="absolute right-12 top-1/2 -translate-y-1/2 w-0 h-0 pointer-events-none z-50">
+                      {particles.map((p) => (
+                        <motion.div
+                          key={p.id}
+                          initial={{ x: 0, y: 0, opacity: 1, scale: p.scale }}
+                          animate={{
+                            x: p.x,
+                            y: p.y,
+                            opacity: 0,
+                            scale: 0.1,
+                          }}
+                          transition={{
+                            duration: p.duration,
+                            ease: "easeOut",
+                          }}
+                          className={`absolute rounded-full bg-gradient-to-t ${p.color}`}
+                          style={{
+                            width: `${p.size}px`,
+                            height: `${p.size}px`,
+                            boxShadow: "0 0 10px 2px rgba(249, 115, 22, 0.7), 0 0 20px 4px rgba(245, 158, 11, 0.4)",
+                            marginLeft: `-${p.size / 2}px`,
+                            marginTop: `-${p.size / 2}px`,
+                          }}
+                        />
+                      ))}
+
+                      {/* Extra shockwave ring */}
+                      <motion.div
+                        initial={{ scale: 0.1, opacity: 0.8 }}
+                        animate={{ scale: 2.2, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="absolute w-14 h-14 -left-7 -top-7 rounded-full border border-orange-500/60 shadow-[0_0_15px_rgba(249,115,22,0.4)]"
+                      />
+                    </div>
+                  )}
+                </AnimatePresence>
                 
-                <button
-                  type="submit"
-                  title="Verify Clue"
-                  className="absolute right-2 top-2 bottom-2 bg-white text-black hover:bg-gray-200 px-5 rounded-full font-semibold text-[10px] uppercase tracking-widest transition-colors cursor-pointer"
-                  id="btn-verify-match"
-                >
-                  Verify
-                </button>
+                <AnimatePresence mode="wait">
+                  {!isExploding && (
+                    <motion.button
+                      type="submit"
+                      title="Verify Clue"
+                      initial={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8, filter: "blur(2px)" }}
+                      transition={{ duration: 0.2 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="absolute right-2 top-2 bottom-2 bg-white text-black hover:bg-gray-200 px-5 rounded-full font-semibold text-[10px] uppercase tracking-widest transition-all cursor-pointer z-20"
+                      id="btn-verify-match"
+                    >
+                      Verify
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
